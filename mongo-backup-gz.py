@@ -75,8 +75,8 @@ def un_lock():
 #DB auth credentials
 #db_login="backupadmin"
 #db_pass="jiCD2bbxjdm9tBa1*yyRe23"
-db_login="abbyy"
-db_pass="2Hcsk98XRj9sEtmdTRn"
+db_login="admin"
+db_pass="EDAw7UAvDOeenORrI9tk"
 
 def mongo_backup():
     backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
