@@ -81,7 +81,7 @@ db_pass="Ew7UAv12enOROikRasL3tk"
 def mongo_backup():
     backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
     logging.info("Running mongodump for MongoDB Instance MongoC04 , dumptime: %s" % ( backup_time))
-    archive_name = 'MongoC04_usazure_local' + '_' + backup_time
+    archive_name = 'MongoC04' + '_' + backup_time
 	
     archive_path = os.path.join(storage_dir, archive_name)
     check_dir(archive_path)
@@ -98,7 +98,7 @@ def mongo_backup():
 	            #'--db', '%s' % self.db_name,
 	            '--oplog',
 	            '--gzip',
-	            '--archive=%s' % gz_name
+	            '--out=%s' % archive_path
 	        ])
     except subprocess.CalledProcessError as e:
 		logging.error("Failed to run mongodump. Output Error %s" % e.output)
