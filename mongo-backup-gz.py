@@ -16,7 +16,7 @@ import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
 
-#exclude_db = ('local') 
+exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
 #mongodb_conf = "/etc/mongod.conf"
