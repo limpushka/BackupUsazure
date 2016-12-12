@@ -16,7 +16,7 @@ import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
 
-exclude_db = ('local') 
+#exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
 #mongodb_conf = "/etc/mongod.conf"
@@ -104,7 +104,7 @@ def mongo_backup():
 		logging.error("Failed to run mongodump. Output Error %s" % e.output)
 		un_lock()
 		sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
-    logging.info("Mongodump for DB: %s ended Successfully" % self.db_name)   
+    logging.info("Mongodump for DB Instance  ended Successfully" )   
                  
  
 def disk_clean_up(db_name):  # Delete old archive backup files when free disk space is less than 15%
