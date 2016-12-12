@@ -168,7 +168,7 @@ if os.path.exists(work_dir):
     rmtree(work_dir) # Remove all files in work_dir                                       
                                      
 # Connect to Mongodb. Get list of all database names
-db_conn = MongoClient('localhost', 27017)
+db_conn = MongoClient('mongodb://[abbyy:2Hcsk98XRj9sEtmdTRn@]localhost', 27017)
 db_names = db_conn.database_names()
   
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
