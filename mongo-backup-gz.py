@@ -19,7 +19,6 @@ from pymongo import MongoClient
 exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
-fresh_backup_dir = "/backup/mongodbbackup/fresh/"
 mongodb_conf = "/etc/mongod.conf"
 lockfile = "/tmp/mongo-backup.lock"
 logfile = '/var/log/mongodb/mongo-backup.log'
@@ -36,22 +35,6 @@ def check_dir(path):
 def get_disk_space():
     disk_space = psutil.disk_usage(storage_dir)
     return disk_space.percent
- 
-# Remove unpacked backup for extra fast mongorestoring
-def move_backup():
-    logging.info("Start moving fresh backup")
-    check_dir(fresh_backup_dir)
-    d = []
-    for dirname in os.listdir(fresh_backup_dir):
-        d.append(dirname)
-    if len(d) == 1:
-        d.sort()
-        dirtodel = d[0]
-        del d[0]
-        rmtree(os.path.join(fresh_backup_dir,dirtodel))       
-        logging.info("%s Deleted from fresh backup directory" % dirtodel)
-    fresh_dir = os.path.join(fresh_backup_dir, backup_time)  
-    move(work_dir,fresh_dir)
      
 # Key options for script launch
 parser = argparse.ArgumentParser(description='Backup schedule options - Monthly,Weekly,Daily')
@@ -89,77 +72,12 @@ def un_lock():
     lock.close()
     os.remove(lockfile)
  
-# Switch Mongod replica to single and reverse
-def switch_to_single():
-    logging.info("Start switching Mongod to single instance. Stopping service")
-    backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
-    try:
-        stop_check = subprocess.check_call(
-        [
-            'service',
-            'mongod',
-            'stop'
-        ])
-    except subprocess.CalledProcessError as e:
-            if e.returncode !=0:
-                logging.error("Failed To Stop Mongod service. Check log. ReturnCode is %s" % e.returncode)
-		un_lock()
-                sys.exit("Failed To Stop Mongod service.Check log. ReturnCode is %s" % e.returncode)
-             
-     
-     
-    os.remove(mongodb_conf)
-    logging.info("Copying Mongod config")
-    copyfile('/etc/mongod.conf.single', mongodb_conf)
-    logging.info("Starting Mongod service")
-    try:
-        start_check = subprocess.check_call(
-        [
-            'service',
-            'mongod',
-            'start'
-        ])
-    except subprocess.CalledProcessError as e:
-            if e.returncode !=0:
-                logging.error("Failed To Start Mongod service. Check log. ReturnCode is %s" % e.returncode)
-		un_lock()
-                sys.exit("Failed To Start Mongod service. Check log. ReturnCode is %s" % e.returncode)
-    logging.info("Switching Mongod to single instance ended successfully.")   
-     
-# Switch Mongodb single to replica set
-def switch_to_replica():
-    logging.info("Start switching Mongod to replica set. Stopping service")
-    try:
-        stop_check = subprocess.check_call(
-        [
-            'service',
-            'mongod',
-            'stop'
-        ])
-    except subprocess.CalledProcessError as e:
-            if e.returncode !=0:
-                logging.error("Failed To Stop Mongod service. Check log. ReturnCode is %s" % e.returncode)
-		un_lock()
-                sys.exit("Failed To Stop Mongod service.Check log %s and ReturnCode" % (e.output))
-     
-    os.remove(mongodb_conf)
-    logging.info("Copying Mongod config")
-    copyfile('/etc/mongod.conf.replica', mongodb_conf)
-    logging.info("Starting Mongod service")
-    try:
-        start_check = subprocess.check_call(
-        [
-            'service',
-            'mongod',
-            'start'
-        ])
-    except subprocess.CalledProcessError as e:
-            if e.returncode !=0:
-                logging.error("Failed to Start Mongod service. Check log. ReturnCode is %s" % e.returncode)
-		un_lock()
-                sys.exit("Failed to Start Mongod service. Check log %s and ReturnCode" % (e.output))
-    logging.info("Switching Mongod to replica ended successfully.")
- 
+#DB auth credentials
+#db_login="backupadmin"
+#db_pass="jiCD2bbxjdm9tBa1*yyRe23"
+db_login="abbyy"
+db_pass="2Hcsk98XRj9sEtmdTRn"
+
 class MongoDB:
     mongodb_list = []
     
@@ -182,7 +100,11 @@ class MongoDB:
             backup_output = subprocess.check_call(  # Run Mongodump for each Database
                     [
                         'mongodump',
+	                '-u', '%s' % db_login,
+	                '-p', '%s' % db_pass,
+	                '--authenticationDatabase','%s' % admin,	                
                         '--db', '%s' % self.db_name,
+	                '--oplog',
 	                '--gzip',
                         '--archive=%s' % zip_name
                     ])
@@ -192,36 +114,7 @@ class MongoDB:
                     sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
         logging.info("Mongodump for DB: %s ended Successfully" % self.db_name)       
          
-    def mongo_zip_result(self):
-         
-        archive_name = self.db_name + '_' + backup_time
-        source_name = work_dir + self.db_name
-        archive_path = os.path.join(storage_dir, self.db_name)
- 
-        check_dir(archive_path)
- 
-        zip_name = os.path.join(archive_path, "%s.zip" % archive_name)
-        logging.info("Start zipping dump for DB: %s. Archive zip file name %s " % (self.db_name, archive_name))
-                
-        os.chdir(work_dir)
-        try:
-            zip_from_shell = subprocess.check_call(  # Run zip for Db dump
-                    [
-                        'zip',
-                        '-1',
-                        '-q',
-                        '-r',
-                        '%s'  % zip_name,
-                        '%s' % self.db_name
-                         
-                    ])
-        except subprocess.CalledProcessError as e:
-                            logging.error("Failed to run zip. Output Error %s" % e.output)
-			    un_lock()
-                            sys.exit("Failed to run zip. Output Error %s" % e.output)
-                             
-        logging.info("End zip dump for DB: %s and saving zip file %s to %s " % (self.db_name, archive_name, archive_path))
-        logging.info("Zipping for %s Done Successfully" %archive_name)
+    
  
     def mongo_clean_up(self):
             archive_path = os.path.join(storage_dir, self.db_name)
@@ -274,9 +167,6 @@ logging.info("Cleaning working directory")
 if os.path.exists(work_dir):
     rmtree(work_dir) # Remove all files in work_dir                                       
                                      
-# Switch Mongod to single
-#switch_to_single()
- 
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
 db_names = db_conn.database_names()
@@ -301,12 +191,8 @@ for db_name in db_names:
         except AssertionError, msg:
             logging.error(msg)
           
-# Swiching to single
-#switch_to_replica()
- 
 for db_name in MongoDB.mongodb_list:
     try:
-#        db_name.mongo_zip_result()
         db_name.mongo_clean_up()
     except AssertionError, msg:
         logging.error(msg)
@@ -314,9 +200,6 @@ for db_name in MongoDB.mongodb_list:
          
 # Unlocking and deleting temp file
 un_lock()
- 
-#Copy unpacked dump files to do extrafast mongorestoring
-#move_backup()
  
 # Final Message
 logging.info("All task's for current backup schedule done.")
