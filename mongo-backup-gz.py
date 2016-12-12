@@ -75,8 +75,8 @@ def un_lock():
 #DB auth credentials
 #db_login="backupadmin"
 #db_pass="jiCD2bbxjdm9tBa1*yyRe23"
-db_login="admin"
-db_pass="EDAw7UAvDOeenORrI9tk"
+db_login="backup"
+db_pass="Ew7UAv12enOROikRasL3tk"
 
 def mongo_backup():
     backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
@@ -142,7 +142,7 @@ if os.path.exists(work_dir):
                                      
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
-db_conn.the_database.authenticate('admin','EDAw7UAvDOeenORrI9tk', source='admin')
+db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
 db_names = db_conn.database_names()
   
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
