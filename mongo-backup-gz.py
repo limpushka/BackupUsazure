@@ -102,7 +102,7 @@ class MongoDB:
                         'mongodump',
 	                '-u', '%s' % db_login,
 	                '-p', '%s' % db_pass,
-	                '--authenticationDatabase','%s' % admin,	                
+	                '--authenticationDatabase','%s' % 'admin',	                
                         '--db', '%s' % self.db_name,
 	                '--oplog',
 	                '--gzip',
