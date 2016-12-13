@@ -16,7 +16,7 @@ import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
 
-exclude_db = ('local') 
+exclude_db = ('mt-api') 
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
 lockfile = "/tmp/mongo-backup.lock"
@@ -184,7 +184,6 @@ db_conn.admin.command("fsync", lock=True)
     #except AssertionError, msg:
         #logging.error(msg)
 # Get Backup time.
-backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
 
 for db_name in db_names:
     if db_name not in exclude_db:
@@ -209,6 +208,6 @@ logging.info("Unlocking MongoDB Instance")
 try:
     db_conn.unlock()
 except AssertionError, msg:
-	logging.error(msg)
+    logging.error(msg)
 # Final Message
 logging.info("All task's for current backup schedule done.")
