@@ -84,14 +84,9 @@ class MongoDB:
         self.mongodb_list.append(self)
     
     def mongo_backup(self):
-		
-		
-	archive_path = os.path.join(storage_dir, self.db_name)
-	zip_name = os.path.join(archive_path, "%s.gz" % archive_name)
-
-	logging.info("Running mongodump for MongoDB Instance MongoC04 , dumptime: %s" % ( backup_time))
-	archive_name = self.db_name + '_' + backup_time
 	
+	logging.info("Running mongodump for MongoDB Instance MongoC04 Database: %s, dumptime: %s" % (self.db_name, backup_time))
+	archive_name = self.db_name + '_' + backup_time
 	archive_path = os.path.join(storage_dir, archive_name)
 	check_dir(archive_path)
 	gz_name = os.path.join(archive_path, "%s.gz" % archive_name)
