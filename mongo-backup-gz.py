@@ -168,7 +168,7 @@ db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
 db_names = db_conn.database_names()
 db_is.locked = db_conn.is_locked()
-if db_conn.is_locked() == False:
+if not db_conn.is_locked():
     logging.info("Locking Mongodb Instance!")
     db_conn.admin.command("fsync", lock=True)
 else:
