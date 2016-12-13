@@ -16,10 +16,9 @@ import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
 
-#exclude_db = ('local') 
+exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
-#mongodb_conf = "/etc/mongod.conf"
 lockfile = "/tmp/mongo-backup.lock"
 logfile = '/var/log/mongodb/mongo-backup.log'
 backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
@@ -73,57 +72,80 @@ def un_lock():
     os.remove(lockfile)
  
 #DB auth credentials
-#db_login="backupadmin"
-#db_pass="jiCD2bbxjdm9tBa1*yyRe23"
 db_login="backup"
 db_pass="Ew7UAv12enOROikRasL3tk"
 
-def mongo_backup():
-    backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
-    logging.info("Running mongodump for MongoDB Instance MongoC04 , dumptime: %s" % ( backup_time))
-    archive_name = 'MongoC04' + '_' + backup_time
+class MongoDB:
+    mongodb_list = []
+    
+ 
+    def __init__(self):
+        self.db_name = db_name
+        self.mongodb_list.append(self)
+    
+    def mongo_backup():
+	backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
+	logging.info("Running mongodump for MongoDB Instance MongoC04 , dumptime: %s" % ( backup_time))
+	archive_name = 'MongoC04' + '_' + backup_time
 	
-    archive_path = os.path.join(storage_dir, archive_name)
-    check_dir(archive_path)
-    gz_name = os.path.join(archive_path, "%s.gz" % archive_name)
-    logging.info("Archive path name %s " % (archive_name))
+	archive_path = os.path.join(storage_dir, archive_name)
+	check_dir(archive_path)
+	gz_name = os.path.join(archive_path, "%s.gz" % archive_name)
+	logging.info("Archive path name %s " % (archive_name))
         
-    try:
-	backup_output = subprocess.check_call(  # Run Mongodump for each Database
+	try:
+	    backup_output = subprocess.check_call(  # Run Mongodump for each Database
 	        [
 	            'mongodump',
 	            '-u', '%s' % db_login,
 	            '-p', '%s' % db_pass,
 	            '--authenticationDatabase','%s' % 'admin',	                
 	            #'--db', '%s' % self.db_name,
-	            '--oplog',
+	            #'--oplog',
 	            '--gzip',
 	            '--out=%s' % archive_path
 	        ])
-    except subprocess.CalledProcessError as e:
-		logging.error("Failed to run mongodump. Output Error %s" % e.output)
-		un_lock()
-		sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
-    logging.info("Mongodump for DB Instance  ended Successfully" )   
+	except subprocess.CalledProcessError as e:
+	    logging.error("Failed to run mongodump. Output Error %s" % e.output)
+	    un_lock()
+	    sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
+	    logging.info("Mongodump for DB Instance  ended Successfully" )   
                  
  
-def disk_clean_up(db_name):  # Delete old archive backup files when free disk space is less than 15%
-    logging.info("Starting disk_clean_up function for %s" % db_name)
-    cleanup_path = os.path.join(cleanup_dir, db_name)
-    a = []
-    for files in os.listdir(cleanup_path):
-        a.append(files)
+	def disk_clean_up(db_name):  # Delete old archive backup files when free disk space is less than 15%
+	    logging.info("Starting disk_clean_up function for %s" % db_name)
+	    cleanup_path = os.path.join(cleanup_dir, db_name)
+	    a = []
+	    for files in os.listdir(cleanup_path):
+		a.append(files)
          
-    if len(a) > 6 :
-        a.sort()
-        filetodel = a[0]
-        del a[0]
-        os.remove(os.path.join(cleanup_path, filetodel))
-        logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % filetodel)
-    else :
-        logging.error("Disk cleanup failed. Nothing to delete.")
-        un_lock()
-        sys.exit("Disk cleanup failed. Nothing to delete.")
+	    if len(a) > 6 :
+		a.sort()
+		filetodel = a[0]
+		del a[0]
+		os.remove(os.path.join(cleanup_path, filetodel))
+		logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % filetodel)
+	    else :
+		logging.error("Disk cleanup failed. Nothing to delete.")
+		un_lock()
+		sys.exit("Disk cleanup failed. Nothing to delete.")
+	    
+	    def mongo_clean_up(self):
+		    archive_path = os.path.join(storage_dir, self.db_name)
+		    a = []
+	
+		    check_dir(archive_path) 
+			 
+		    for files in os.listdir(archive_path): 
+			a.append(files)               
+	 
+		    while len(a) > max_backups:
+			a.sort()
+			filetodel = a[0]
+			del a[0]
+			os.remove(os.path.join(archive_path,filetodel))
+			logging.info("Starting cleanup process. File %s was deleted from directory %s" % (filetodel, archive_path))
+			logging.info("Cleanup Done. Total files:%d in Backup Directory %s" % (len(a), self.db_name))	
                      
  
 """Script run start's here"""
@@ -146,33 +168,31 @@ db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='adm
 db_names = db_conn.database_names()
   
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
-#while get_disk_space() > need_free_disk_space:
-    #try:
-        #for db_name in db_names:
-            #cleanup_path = os.path.join(cleanup_dir, db_name)
-            #if not os.path.exists(cleanup_path):
-                #continue
-            #else:
-                #disk_clean_up(db_name)
-    #except AssertionError, msg:
-        #logging.error(msg)
+while get_disk_space() > need_free_disk_space:
+    try:
+        for db_name in db_names:
+            cleanup_path = os.path.join(cleanup_dir, db_name)
+            if not os.path.exists(cleanup_path):
+                continue
+            else:
+                disk_clean_up(db_name)
+    except AssertionError, msg:
+        logging.error(msg)
          
-#Run Mongodump with --oplog
-mongo_backup()
 
-#for db_name in db_names:
-    #if db_name not in exclude_db:
-        #try:
-            #db_name = MongoDB()
-            #db_name.mongo_backup() 
-        #except AssertionError, msg:
-            #logging.error(msg)
+for db_name in db_names:
+    if db_name not in exclude_db:
+        try:
+            db_name = MongoDB()
+            db_name.mongo_backup() 
+        except AssertionError, msg:
+            logging.error(msg)
           
-#for db_name in MongoDB.mongodb_list:
-    #try:
-        #db_name.mongo_clean_up()
-    #except AssertionError, msg:
-        #logging.error(msg)
+for db_name in MongoDB.mongodb_list:
+    try:
+        db_name.mongo_clean_up()
+    except AssertionError, msg:
+        logging.error(msg)
          
          
 # Unlocking and deleting temp file
