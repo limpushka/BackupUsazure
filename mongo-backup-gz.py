@@ -170,7 +170,7 @@ if os.path.exists(work_dir):
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
 db_names = db_conn.database_names()
-db.conn.admin.command("fsync", lock=True)
+db_conn.admin.command("fsync", lock=True)
 
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
 #while get_disk_space() > need_free_disk_space:
@@ -207,7 +207,7 @@ un_lock()
 #Unlocking MongoDB
 logging.info("Unlocking MongoDB Instance")
 try:
-    db.conn.admin['$cmd'].sys.unlock.find_one()
+    db_conn.admin['$cmd'].sys.unlock.find_one()
 except AssertionError, msg:
 	logging.error(msg)
 # Final Message
