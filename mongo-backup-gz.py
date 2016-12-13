@@ -88,10 +88,10 @@ class MongoDB:
 	logging.info("Running mongodump for MongoDB Instance MongoC04 Database: %s, dumptime: %s" % (self.db_name, backup_time))
 	archive_name = self.db_name + '_' + backup_time
 	
-	archive_path = os.path.join(storage_dir, archive_name)
+	archive_path = os.path.join(storage_dir, self.db_name)
 	check_dir(archive_path)
 	gz_name = os.path.join(archive_path, archive_name)
-	logging.info("Archive path  %s " % (archive_path))
+	logging.info("Archive name  %s " % (gz_name))
         
 	try:
 	    backup_output = subprocess.check_call(  # Run Mongodump for each Database
