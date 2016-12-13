@@ -167,8 +167,12 @@ if os.path.exists(work_dir):
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
 db_names = db_conn.database_names()
-db_conn.admin.command("fsync", lock=True)
-
+db_is.locked = db_conn.is_locked()
+if db_conn.is_locked() == False:
+    logging.info("Locking Mongodb Instance!")
+    db_conn.admin.command("fsync", lock=True)
+else:
+    logging.error("Mongo Instance Is locked!")
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
 #while get_disk_space() > need_free_disk_space:
     #try:
