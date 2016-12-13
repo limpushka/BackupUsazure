@@ -87,9 +87,10 @@ class MongoDB:
 	
 	logging.info("Running mongodump for MongoDB Instance MongoC04 Database: %s, dumptime: %s" % (self.db_name, backup_time))
 	archive_name = self.db_name + '_' + backup_time
+	
 	archive_path = os.path.join(storage_dir, archive_name)
 	check_dir(archive_path)
-	gz_name = os.path.join(archive_path, "%s.gz" % archive_name)
+	gz_name = os.path.join(archive_path, archive_name)
 	logging.info("Archive path  %s " % (archive_path))
         
 	try:
@@ -102,7 +103,7 @@ class MongoDB:
 	            '--db', '%s' % self.db_name,
 	            #'--oplog',
 	            '--gzip',
-	            '--out=%s' % archive_path
+	            '--out=%s' % gz_name
 	        ])
 	except subprocess.CalledProcessError as e:
 	    logging.error("Failed to run mongodump. Output Error %s" % e.output)
