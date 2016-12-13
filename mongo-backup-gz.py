@@ -84,14 +84,18 @@ class MongoDB:
         self.mongodb_list.append(self)
     
     def mongo_backup():
-	backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
+		
+		
+	archive_path = os.path.join(storage_dir, self.db_name)
+	zip_name = os.path.join(archive_path, "%s.gz" % archive_name)
+
 	logging.info("Running mongodump for MongoDB Instance MongoC04 , dumptime: %s" % ( backup_time))
-	archive_name = 'MongoC04' + '_' + backup_time
+	archive_name = self.db_name + '_' + backup_time
 	
 	archive_path = os.path.join(storage_dir, archive_name)
 	check_dir(archive_path)
 	gz_name = os.path.join(archive_path, "%s.gz" % archive_name)
-	logging.info("Archive path name %s " % (archive_name))
+	logging.info("Archive path  %s " % (archive_path))
         
 	try:
 	    backup_output = subprocess.check_call(  # Run Mongodump for each Database
@@ -100,7 +104,7 @@ class MongoDB:
 	            '-u', '%s' % db_login,
 	            '-p', '%s' % db_pass,
 	            '--authenticationDatabase','%s' % 'admin',	                
-	            #'--db', '%s' % self.db_name,
+	            '--db', '%s' % self.db_name,
 	            #'--oplog',
 	            '--gzip',
 	            '--out=%s' % archive_path
@@ -166,19 +170,21 @@ if os.path.exists(work_dir):
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
 db_names = db_conn.database_names()
-  
+db.conn.admin.command("fsync", lock=True)
+
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
-while get_disk_space() > need_free_disk_space:
-    try:
-        for db_name in db_names:
-            cleanup_path = os.path.join(cleanup_dir, db_name)
-            if not os.path.exists(cleanup_path):
-                continue
-            else:
-                disk_clean_up(db_name)
-    except AssertionError, msg:
-        logging.error(msg)
-         
+#while get_disk_space() > need_free_disk_space:
+    #try:
+        #for db_name in db_names:
+            #cleanup_path = os.path.join(cleanup_dir, db_name)
+            #if not os.path.exists(cleanup_path):
+                #continue
+            #else:
+                #disk_clean_up(db_name)
+    #except AssertionError, msg:
+        #logging.error(msg)
+# Get Backup time.
+backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
 
 for db_name in db_names:
     if db_name not in exclude_db:
@@ -197,6 +203,12 @@ for db_name in MongoDB.mongodb_list:
          
 # Unlocking and deleting temp file
 un_lock()
- 
+
+#Unlocking MongoDB
+logging.info("Unlocking MongoDB Instance")
+try:
+    db.conn.admin['$cmd'].sys.unlock.find_one()
+except AssertionError, msg:
+	logging.error(msg)
 # Final Message
 logging.info("All task's for current backup schedule done.")
