@@ -208,7 +208,7 @@ un_lock()
 #Unlocking MongoDB
 logging.info("Unlocking MongoDB Instance")
 try:
-    db_conn.admin['$cmd'].sys.unlock.find_one()
+    db_conn.unlock()
 except AssertionError, msg:
 	logging.error(msg)
 # Final Message
