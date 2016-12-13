@@ -83,7 +83,7 @@ class MongoDB:
         self.db_name = db_name
         self.mongodb_list.append(self)
     
-    def mongo_backup():
+    def mongo_backup(self):
 		
 		
 	archive_path = os.path.join(storage_dir, self.db_name)
