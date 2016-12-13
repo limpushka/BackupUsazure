@@ -108,43 +108,44 @@ class MongoDB:
 	    logging.error("Failed to run mongodump. Output Error %s" % e.output)
 	    un_lock()
 	    sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
-	    logging.info("Mongodump for DB Instance  ended Successfully" )   
+	    logging.info("Mongodump for DB Instance  ended Successfully" )
+	    
+    def mongo_clean_up(self):
+	    archive_path = os.path.join(storage_dir, self.db_name)
+	    a = []
+		
+	    check_dir(archive_path) 
+                 
+	    for files in os.listdir(archive_path): 
+		a.append(files)               
+ 
+		while len(a) > max_backups:
+		    a.sort()
+		    filetodel = a[0]
+		    del a[0]
+		    os.remove(os.path.join(archive_path,filetodel))
+		    logging.info("Starting cleanup process. File %s was deleted from directory %s" % (filetodel, archive_path))
+		    logging.info("Cleanup Done. Total files:%d in Backup Directory %s" % (len(a), self.db_name))	
                  
  
-	def disk_clean_up(db_name):  # Delete old archive backup files when free disk space is less than 15%
-	    logging.info("Starting disk_clean_up function for %s" % db_name)
-	    cleanup_path = os.path.join(cleanup_dir, db_name)
-	    a = []
-	    for files in os.listdir(cleanup_path):
-		a.append(files)
+def disk_clean_up(db_name):  # Delete old archive backup files when free disk space is less than 15%
+	logging.info("Starting disk_clean_up function for %s" % db_name)
+	cleanup_path = os.path.join(cleanup_dir, db_name)
+	a = []
+	for files in os.listdir(cleanup_path):
+	    a.append(files)
          
-	    if len(a) > 6 :
-		a.sort()
-		filetodel = a[0]
-		del a[0]
-		os.remove(os.path.join(cleanup_path, filetodel))
-		logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % filetodel)
-	    else :
-		logging.error("Disk cleanup failed. Nothing to delete.")
-		un_lock()
-		sys.exit("Disk cleanup failed. Nothing to delete.")
-	    
-	    def mongo_clean_up(self):
-		    archive_path = os.path.join(storage_dir, self.db_name)
-		    a = []
-	
-		    check_dir(archive_path) 
-			 
-		    for files in os.listdir(archive_path): 
-			a.append(files)               
-	 
-		    while len(a) > max_backups:
-			a.sort()
-			filetodel = a[0]
-			del a[0]
-			os.remove(os.path.join(archive_path,filetodel))
-			logging.info("Starting cleanup process. File %s was deleted from directory %s" % (filetodel, archive_path))
-			logging.info("Cleanup Done. Total files:%d in Backup Directory %s" % (len(a), self.db_name))	
+	if len(a) > 6 :
+	    a.sort()
+	    filetodel = a[0]
+	    del a[0]
+	    os.remove(os.path.join(cleanup_path, filetodel))
+	    logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % filetodel)
+	else :
+	    logging.error("Disk cleanup failed. Nothing to delete.")
+	    un_lock()
+	    sys.exit("Disk cleanup failed. Nothing to delete.")
+	    	
                      
  
 """Script run start's here"""
