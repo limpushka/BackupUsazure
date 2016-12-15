@@ -233,7 +233,7 @@ un_lock()
 #Unlocking MongoDB
 logging.info("Unlocking MongoDB Instance")
 try:
-    mongod_fsync_lock()
+    mongod_fsync_unlock()
 except AssertionError, msg:
     logging.error(msg)
 # Final Message
