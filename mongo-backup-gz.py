@@ -79,8 +79,8 @@ def mongod_fsync_lock():
                 '-u', '%s' % db_login,
                 '-p', '%s' % db_pass,
                 '--authenticationDatabase','%s' % 'admin',	                
-                '--eval', '%s' % self.db_name,
-                "db.fsyncLock()",
+                '--eval',
+                "db.fsyncLock()"
             ])
 
 def mongod_fsync_unlock():
@@ -90,8 +90,8 @@ def mongod_fsync_unlock():
                 '-u', '%s' % db_login,
                 '-p', '%s' % db_pass,
                 '--authenticationDatabase','%s' % 'admin',	                
-                '--eval', '%s' % self.db_name,
-                "db.fsyncUnlock()",
+                '--eval',
+                "db.fsyncUnlock()"
             ])
 
  
