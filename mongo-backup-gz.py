@@ -135,22 +135,20 @@ class MongoDB:
 	    sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
 	    logging.info("Mongodump for DB Instance  ended Successfully" )
 	    
-    def mongo_clean_up(self):
-	    #archive_path = os.path.join(storage_dir, backup_time)
-	    a = []
-		
-	    #check_dir(storage_dir) 
+def mongo_clean_up():
+    #archive_path = os.path.join(storage_dir, backup_time)
+    a = []
+    #check_dir(storage_dir) 
                  
-	    for dirs in os.listdir(storage_dir): 
-		a.append(dirs)               
- 
-		while len(a) > max_backups:
-		    a.sort()
-		    dirtodel = a[0]
-		    del a[0]
-		    rmtree(os.path.join(storage_dir,dirtodel))
-		    logging.info("Starting cleanup process. File %s was deleted from directory %s" % (dirtodel, storage_dir))
-		    logging.info("Cleanup Done. Total Backups:%d in Backup Directory" % len(a))	
+    for dirs in os.listdir(storage_dir): 
+	a.append(dirs)               
+ 	while len(a) > max_backups:
+	    a.sort()
+	    dirtodel = a[0]
+	    del a[0]
+	    rmtree(os.path.join(storage_dir,dirtodel))
+	    logging.info("Starting cleanup process. File %s was deleted from directory %s" % (dirtodel, storage_dir))
+	    logging.info("Cleanup Done. Total Backups:%d in Backup Directory" % len(a))	
                  
  
 def disk_clean_up():  # Delete old archive backup files when free disk space is less than 15%
@@ -214,12 +212,13 @@ for db_name in db_names:
             db_name.mongo_backup() 
         except AssertionError, msg:
             logging.error(msg)
-          
-for db_name in MongoDB.mongodb_list:
-    try:
-        db_name.mongo_clean_up()
-    except AssertionError, msg:
-        logging.error(msg)
+
+mongo_clean_up()         
+#for db_name in MongoDB.mongodb_list:
+    #try:
+        #db_name.mongo_clean_up()
+    #except AssertionError, msg:
+        #logging.error(msg)
          
          
 # Unlocking and deleting temp file
