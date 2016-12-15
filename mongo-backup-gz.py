@@ -136,36 +136,36 @@ class MongoDB:
 	    logging.info("Mongodump for DB Instance  ended Successfully" )
 	    
     def mongo_clean_up(self):
-	    archive_path = os.path.join(storage_dir, self.db_name)
+	    #archive_path = os.path.join(storage_dir, backup_time)
 	    a = []
 		
-	    check_dir(archive_path) 
+	    #check_dir(storage_dir) 
                  
-	    for files in os.listdir(archive_path): 
-		a.append(files)               
+	    for dirs in os.listdir(storage_dir): 
+		a.append(dirs)               
  
 		while len(a) > max_backups:
 		    a.sort()
-		    filetodel = a[0]
+		    dirtodel = a[0]
 		    del a[0]
-		    os.remove(os.path.join(archive_path,filetodel))
-		    logging.info("Starting cleanup process. File %s was deleted from directory %s" % (filetodel, archive_path))
-		    logging.info("Cleanup Done. Total files:%d in Backup Directory %s" % (len(a), self.db_name))	
+		    rmtree(os.path.join(storage_dir,dirtodel))
+		    logging.info("Starting cleanup process. File %s was deleted from directory %s" % (dirtodel, storage_dir))
+		    logging.info("Cleanup Done. Total Backups:%d in Backup Directory" % len(a))	
                  
  
-def disk_clean_up(db_name):  # Delete old archive backup files when free disk space is less than 15%
-	logging.info("Starting disk_clean_up function for %s" % db_name)
-	cleanup_path = os.path.join(cleanup_dir, db_name)
+def disk_clean_up():  # Delete old archive backup files when free disk space is less than 15%
+	logging.info("Starting disk_clean_up function for %s" % cleanup_dir)
+	#cleanup_path = os.path.join(cleanup_dir, backup_time)
 	a = []
-	for files in os.listdir(cleanup_path):
-	    a.append(files)
+	for dirs in os.listdir(cleanup_dir):
+	    a.append(dirs)
          
 	if len(a) > 6 :
 	    a.sort()
-	    filetodel = a[0]
+	    dirtodel = a[0]
 	    del a[0]
-	    os.remove(os.path.join(cleanup_path, filetodel))
-	    logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % filetodel)
+	    rmtree(os.path.join(cleanup_path, dirtodel))
+	    logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % dirtodel)
 	else :
 	    logging.error("Disk cleanup failed. Nothing to delete.")
 	    un_lock()
@@ -183,9 +183,9 @@ else:
     lock = zc.lockfile.LockFile(lockfile, content_template='{pid}; {hostname}')
  
 # Start cleaning working directory
-logging.info("Cleaning working directory")
-if os.path.exists(work_dir):
-    rmtree(work_dir) # Remove all files in work_dir                                       
+#logging.info("Cleaning working directory")
+#if os.path.exists(work_dir):
+#    rmtree(work_dir) # Remove all files in work_dir                                       
                                      
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
@@ -200,16 +200,11 @@ except AssertionError, msg:
     logging.error(msg)
 
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
-#while get_disk_space() > need_free_disk_space:
-    #try:
-        #for db_name in db_names:
-            #cleanup_path = os.path.join(cleanup_dir, db_name)
-            #if not os.path.exists(cleanup_path):
-                #continue
-            #else:
-                #disk_clean_up(db_name)
-    #except AssertionError, msg:
-        #logging.error(msg)
+while get_disk_space() > need_free_disk_space:
+    try:
+        disk_clean_up()
+    except AssertionError, msg:
+        logging.error(msg)
 # Get Backup time.
 
 for db_name in db_names:
@@ -236,5 +231,6 @@ try:
     mongod_fsync_unlock()
 except AssertionError, msg:
     logging.error(msg)
+    
 # Final Message
 logging.info("All task's for current backup schedule done.")
