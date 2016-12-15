@@ -70,6 +70,30 @@ else:
 def un_lock():
     lock.close()
     os.remove(lockfile)
+    
+#lock MOngod Instance
+def mongod_fsync_lock():
+    backup_output = subprocess.check_call( 
+            [
+                'mongo',
+                '-u', '%s' % db_login,
+                '-p', '%s' % db_pass,
+                '--authenticationDatabase','%s' % 'admin',	                
+                '--eval', '%s' % self.db_name,
+                "db.fsyncLock()",
+            ])
+
+def mongod_fsync_unlock():
+    backup_output = subprocess.check_call( 
+            [
+                'mongo',
+                '-u', '%s' % db_login,
+                '-p', '%s' % db_pass,
+                '--authenticationDatabase','%s' % 'admin',	                
+                '--eval', '%s' % self.db_name,
+                "db.fsyncUnlock()",
+            ])
+
  
 #DB auth credentials
 db_login="backup"
@@ -167,11 +191,14 @@ if os.path.exists(work_dir):
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
 db_names = db_conn.database_names()
-#if not db_conn.is_locked:
-    #logging.info("Locking Mongodb Instance!")
-db_conn.admin.command("fsync", lock=True)
-#else:
-    #logging.error("Mongo Instance Is locked!")
+
+#Locking Mongod Instance
+try:
+    mongod_fsync_lock()
+    logging.info("Mongo Instance Is locked!")
+except AssertionError, msg:
+    logging.error(msg)
+
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
 #while get_disk_space() > need_free_disk_space:
     #try:
@@ -206,7 +233,7 @@ un_lock()
 #Unlocking MongoDB
 logging.info("Unlocking MongoDB Instance")
 try:
-    db_conn.unlock()
+    mongod_fsync_lock()
 except AssertionError, msg:
     logging.error(msg)
 # Final Message
