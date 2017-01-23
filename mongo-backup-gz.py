@@ -72,7 +72,7 @@ else:
 #DB auth credentials
 #db_login="backup"
 #db_pass="Ew7UAv12enOROikRasL3tk"
-db_login = args.pwd
+db_pass = args.pwd
 db_user = args.user
 
 # Unlock and delete lock file.
