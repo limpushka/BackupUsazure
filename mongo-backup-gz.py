@@ -73,7 +73,7 @@ else:
 #db_login="backup"
 #db_pass="Ew7UAv12enOROikRasL3tk"
 db_pass = args.pwd
-db_user = args.user
+db_login = args.user
 
 # Unlock and delete lock file.
 def un_lock():
