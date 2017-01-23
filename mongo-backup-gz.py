@@ -101,12 +101,28 @@ def mongod_fsync_unlock():
                 "db.fsyncUnlock()"
             ])
 
+	    
 #Check if Mongod is locked
-def Mongod_is_locked ():
-    co = db.currentOp();
-    if (co and co.fsyncLock):
+def Mongod_is_locked():
+    db_conn = MongoClient('localhost', 27017)
+    db_conn.the_database.authenticate(db_login, db_pass, source='admin')
+    db = db_conn.admin 
+    current_ops = db.current_op();
+    if (current_ops and get_attr()):
+	print "DB is Locked"
 	return true
-    return false
+    
+    else: 
+	print "DB isn't Locked"
+        return false
+
+def get_attr():
+    if hasattr(current_ops,'fsyncLock'):
+	return true
+    else:
+	print "Doesn't Exists"
+	return false
+
 
 
 class MongoDB:
@@ -194,8 +210,8 @@ else:
 #logging.info("Cleaning working directory")
 #if os.path.exists(work_dir):
 #    rmtree(work_dir) # Remove all files in work_dir                                       
-db_pass = args.pwd
-db_login = args.user                  
+Mongod_is_locked()
+
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate(db_login, db_pass, source='admin')
