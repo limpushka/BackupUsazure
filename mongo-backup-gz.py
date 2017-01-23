@@ -111,7 +111,8 @@ def Mongod_is_locked():
     if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
 	print current_ops.fsyncLock
 	logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
-    else: 
+    else:
+	print current_ops.fsyncLock
 	logging.info("Checking if Instance is Locked. Result: MongoDB isn't Locked ")
         
 
