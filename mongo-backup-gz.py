@@ -107,7 +107,7 @@ def Mongod_is_locked():
     db_conn = MongoClient('localhost', 27017)
     db_conn.the_database.authenticate(db_login, db_pass, source='admin')
     db = db_conn.admin 
-    current_ops = db.current_op();
+    current_ops = db.current_op(True);
     if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
 	logging.info(current_ops.fsyncLock)
 	logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
