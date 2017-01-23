@@ -108,7 +108,7 @@ def Mongod_is_locked():
     db_conn.the_database.authenticate(db_login, db_pass, source='admin')
     db = db_conn.admin 
     current_ops = db.current_op();
-    if (current_ops and get_attr()):
+    if (hasattr(current_ops,'fsyncLock') and current_ops.fsyncLock):
 	print "DB is Locked"
 	return true
     
@@ -116,12 +116,12 @@ def Mongod_is_locked():
 	print "DB isn't Locked"
         return false
 
-def get_attr():
-    if hasattr(current_ops,'fsyncLock'):
-	return true
-    else:
-	print "Doesn't Exists"
-	return false
+#def get_attr():
+    #if hasattr(current_ops,'fsyncLock'):
+	#return true
+    #else:
+	#print "Doesn't Exists"
+	#return false
 
 
 
