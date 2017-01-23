@@ -108,10 +108,10 @@ def Mongod_is_locked():
     db_conn.the_database.authenticate(db_login, db_pass, source='admin')
     db = db_conn.admin 
     current_ops = db.current_op();
-    if (hasattr(current_ops,'fsyncLock') and current_ops.fsyncLock):
-	logging.error("Checking if MongoDB is Locked. Result: MongoDB is Locked ")
+    if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
+	logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
     else: 
-	logging.info("Checking if MongoDB is Locked. Result: MongoDB isn't Locked ")
+	logging.info("Checking if Instance is Locked. Result: MongoDB isn't Locked ")
         
 
 #def get_attr():
