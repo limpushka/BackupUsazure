@@ -219,7 +219,7 @@ db_names = db_conn.database_names()
 #Locking Mongod Instance
 try:
     mongod_fsync_lock()
-    logging.info("Mongo Instance Is locked!")
+    logging.info("Locking Mongod Instance!")
 except AssertionError, msg:
     logging.error(msg)
 
