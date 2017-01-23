@@ -41,8 +41,8 @@ parser.add_argument('--monthly', '-m', action="store_true", help='Option for Mon
 parser.add_argument('--weekly', '-w', action="store_true", help='Option for Weekly Backup')
 parser.add_argument('--daily', '-d', action="store_true", help='Option for Daily Backup')
 
-parser.add_argument('--pwd', '-p', action="store_true", help='Option for password')
-parser.add_argument('--user', '-u', action="store_true", help='Option for user')
+parser.add_argument('--pwd', '-p', type=str, help='Option for password')
+parser.add_argument('--user', '-u', type=str, help='Option for user')
                                       
 args = parser.parse_args()
  
