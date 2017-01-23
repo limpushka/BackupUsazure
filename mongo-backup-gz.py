@@ -40,6 +40,9 @@ parser = argparse.ArgumentParser(description='Backup schedule options - Monthly,
 parser.add_argument('--monthly', '-m', action="store_true", help='Option for Monthly Backup')
 parser.add_argument('--weekly', '-w', action="store_true", help='Option for Weekly Backup')
 parser.add_argument('--daily', '-d', action="store_true", help='Option for Daily Backup')
+
+parser.add_argument('--pwd', '-p', action="store_true", help='Option for password')
+parser.add_argument('--user', '-u', action="store_true", help='Option for user')
                                       
 args = parser.parse_args()
  
@@ -66,6 +69,12 @@ else:
     logging.info("Please specify key arguments.--monthly - Option for Monthly Backup,--weekly - Option for Weekly Backup , -daily - Option for Daily Backup")
     sys.exit("Please specify key arguments.--monthly - Option for Monthly Backup,--weekly - Option for Weekly Backup , -daily - Option for Daily Backup")   
  
+#DB auth credentials
+#db_login="backup"
+#db_pass="Ew7UAv12enOROikRasL3tk"
+db_login = args.pwd
+db.user = args.user
+
 # Unlock and delete lock file.
 def un_lock():
     lock.close()
@@ -94,10 +103,6 @@ def mongod_fsync_unlock():
                 "db.fsyncUnlock()"
             ])
 
- 
-#DB auth credentials
-db_login="backup"
-db_pass="Ew7UAv12enOROikRasL3tk"
 
 class MongoDB:
     mongodb_list = []
