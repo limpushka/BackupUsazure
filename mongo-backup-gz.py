@@ -69,9 +69,7 @@ else:
     logging.info("Please specify key arguments.--monthly - Option for Monthly Backup,--weekly - Option for Weekly Backup , -daily - Option for Daily Backup")
     sys.exit("Please specify key arguments.--monthly - Option for Monthly Backup,--weekly - Option for Weekly Backup , -daily - Option for Daily Backup")   
  
-#DB auth credentials
-#db_login="backup"
-#db_pass="Ew7UAv12enOROikRasL3tk"
+#Pase DB auth credentials
 db_pass = args.pwd
 db_login = args.user
 
@@ -80,7 +78,7 @@ def un_lock():
     lock.close()
     os.remove(lockfile)
     
-#lock MOngod Instance
+#lock/unlock Mongod Instance
 def mongod_fsync_lock():
     backup_output = subprocess.check_call( 
             [
@@ -102,6 +100,13 @@ def mongod_fsync_unlock():
                 '--eval',
                 "db.fsyncUnlock()"
             ])
+
+#Check if Mongod is locked
+def Mongod_is_locked ():
+    co = db.currentOp();
+    if (co and co.fsyncLock):
+	return true
+    return false
 
 
 class MongoDB:
@@ -189,10 +194,11 @@ else:
 #logging.info("Cleaning working directory")
 #if os.path.exists(work_dir):
 #    rmtree(work_dir) # Remove all files in work_dir                                       
-                                     
+db_pass = args.pwd
+db_login = args.user                  
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
-db_conn.the_database.authenticate('backup','Ew7UAv12enOROikRasL3tk', source='admin')
+db_conn.the_database.authenticate(db_login, db_pass, source='admin')
 db_names = db_conn.database_names()
 
 #Locking Mongod Instance
