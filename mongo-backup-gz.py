@@ -104,15 +104,10 @@ def mongod_fsync_unlock():
 	    
 #Check if Mongod is locked
 def Mongod_is_locked():
-    current_ops = subprocess.check_call( 
-            [
-                'mongo',
-                '-u', '%s' % db_login,
-                '-p', '%s' % db_pass,
-                '--authenticationDatabase','%s' % 'admin',	                
-                '--eval',
-                "db.currentOp()"
-            ])
+    db_conn = MongoClient('localhost', 27017)
+    db_conn.the_database.authenticate(db_login, db_pass, source='admin')
+    db = db_conn.admin 
+    current_ops = db.current_op(include_all=True);
     if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
 	logging.info(current_ops.fsyncLock)
 	logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
@@ -216,6 +211,7 @@ else:
 #if os.path.exists(work_dir):
 #    rmtree(work_dir) # Remove all files in work_dir                                       
 Mongod_is_locked()
+sys.exit("Checking Lock")
 
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
