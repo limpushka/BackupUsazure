@@ -15,7 +15,6 @@ import psutil
 import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
-#import pymongo
 
 exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
@@ -31,10 +30,32 @@ def check_dir(path):
     if not os.path.exists(path): 
         os.makedirs(path)
  
+def get_size(folder):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(folder):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+    return total_size #Returns the size of a folder in bytes
+
 # Check disk space usage
-def get_disk_space():
-    disk_space = psutil.disk_usage(storage_dir)
-    return disk_space.percent
+def check_disk_space(folder):
+    free_disk_space = psutil.disk_usage(storage_dir)
+    if (get_size(folder) > free_disk_space.free):
+	logging.info("Free space %s is greater than last backup size %s ") % (free_disk_space.free , get_size(folder))
+        return True
+    else:
+	logging.error("Free space %s is less than last backup size %s ") % (free_disk_space.free , get_size(folder))
+        return False
+    
+def get_last_backup(folder):
+    for dirs in os.listdir(folder): 
+	    a.append(dirs)               
+	    a.sort()
+	    last_backup = a[len(a)-1]
+	    path = os.path.join(folder,last_backup)
+	    logging.info("Last backup. %s, path %s" % (last_backup,path))
+    return path
      
 # Key options for script launch
 parser = argparse.ArgumentParser(description='Backup schedule options - Monthly,Weekly,Daily')
@@ -51,21 +72,18 @@ args = parser.parse_args()
 # Checking input arguments
 if args.monthly:
     storage_dir = "/backup/mongodbbackup/storage/monthly"
-    check_dir(storage_dir) 
+    check_dir(storage_dir)
     max_backups = 2
-    need_free_disk_space = 70
     logging.info("Starting monthly MongoDB backup")
 elif args.weekly:
     storage_dir = "/backup/mongodbbackup/storage/weekly"
     check_dir(storage_dir)
     max_backups = 4
-    need_free_disk_space = 70
     logging.info("Starting weekly MongoDB backup")
 elif args.daily:
     storage_dir = "/backup/mongodbbackup/storage/daily"
-    check_dir(storage_dir)  
-    max_backups = 10
-    need_free_disk_space = 68
+    check_dir(storage_dir)
+    max_backups = 100
     logging.info("Starting daily MongoDB backup")   
 else:
     logging.info("Please specify key arguments.--monthly - Option for Monthly Backup,--weekly - Option for Weekly Backup , -daily - Option for Daily Backup")
@@ -86,45 +104,7 @@ def mongo_fsync_lock(conn, state):
         if state is False:
             conn.unlock()
         print "Lock state: %s" % conn.is_locked
-
-
-
-#lock/unlock Mongod Instance
-#def mongod_fsync_lock():
-    #backup_output = subprocess.check_call( 
-            #[
-                #'mongo',
-                #'-u', '%s' % db_login,
-                #'-p', '%s' % db_pass,
-                #'--authenticationDatabase','%s' % 'admin',	                
-                #'--eval',
-                #"db.fsyncLock()"
-            #])
-
-#def mongod_fsync_unlock():
-    #backup_output = subprocess.check_call( 
-            #[
-                #'mongo',
-                #'-u', '%s' % db_login,
-                #'-p', '%s' % db_pass,
-                #'--authenticationDatabase','%s' % 'admin',	                
-                #'--eval',
-                #"db.fsyncUnlock()"
-            #])
-
-	    
-#Check if Mongod is locked
-#def Mongod_is_locked():
-    #db_conn = MongoClient('localhost', 27017)
-    #db_conn.the_database.authenticate(db_login, db_pass, source='admin')
-    #db = db_conn.admin 
-    #current_ops = db.current_op(include_all=True);
-    #if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
-	#print(current_ops.fsyncLock)
-	#logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
-    #else:
-	#print(current_ops.fsyncLock)
-	#logging.info("Checking if Instance is Locked. Result: MongoDB isn't Locked ")
+	logging.error("MongoDB Instance Lock state: %s" % conn.is_locked)
         
 
 class MongoDB:
@@ -211,9 +191,7 @@ else:
 # Start cleaning working directory
 #logging.info("Cleaning working directory")
 #if os.path.exists(work_dir):
-#    rmtree(work_dir) # Remove all files in work_dir                                       
-#Mongod_is_locked()
-#sys.exit("Checking Lock")
+#    rmtree(work_dir) # Remove all files in work_dir 
 
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
@@ -228,23 +206,14 @@ except AssertionError, msg:
     logging.error(msg)
 
  
-
-
-##Locking Mongod Instance
-#try:
-    #mongod_fsync_lock()
-    #logging.info("Locking Mongod Instance!")
-#except AssertionError, msg:
-    #logging.error(msg)
-
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
-while get_disk_space() > need_free_disk_space:
+while (check_disk_space(get_last_backup(cleanup_dir)) == False) :
     try:
         disk_clean_up()
     except AssertionError, msg:
         logging.error(msg)
-# Get Backup time.
 
+# Backup
 for db_name in db_names:
     if db_name not in exclude_db:
         try:
@@ -253,7 +222,8 @@ for db_name in db_names:
         except AssertionError, msg:
             logging.error(msg)
 
-mongo_clean_up()         
+mongo_clean_up() 
+
 #for db_name in MongoDB.mongodb_list:
     #try:
         #db_name.mongo_clean_up()
