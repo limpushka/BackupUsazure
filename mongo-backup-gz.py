@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Backup script Made for Abbyy-LS
-# Script connects to MongoDB, gets all db names, then for each database except "local" performs mongodump and archive's the result  to our backup storage directory.
-# Script checks our storage directory and if free disk space is less than 15% - performs Disk Clean up.
+# Beta version. Date 25.01.2017 
+# Backup script Made for Abbyy-LS by D.Chernyakov
+# Script connects to MongoDB, gets all db names, then for each database except "local" performs mongodump with archive key and saves the result  to our backup storage directory.
+
  
 import sys
 import os
@@ -142,7 +143,7 @@ class MongoDB:
 	    logging.error("Failed to run mongodump. Output Error %s" % e.output)
 	    un_lock()
 	    sys.exit("Failed to run mongodump. Output Error %s" % e.output)       
-	    logging.info("Mongodump for DB Instance  ended Successfully" )
+	logging.info("Mongodump for DB Instance  ended Successfully" )
 	    
 def mongo_clean_up():
     #archive_path = os.path.join(storage_dir, backup_time)
