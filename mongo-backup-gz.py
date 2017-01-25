@@ -14,8 +14,8 @@ import subprocess
 import psutil
 import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
-#from pymongo import MongoClient
-import pymongo
+from pymongo import MongoClient
+#import pymongo
 
 exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
