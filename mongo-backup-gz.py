@@ -49,6 +49,7 @@ def check_disk_space(folder):
         return False
     
 def get_last_backup(folder):
+    a = []
     for dirs in os.listdir(folder): 
 	    a.append(dirs)               
 	    a.sort()
