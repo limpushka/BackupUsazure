@@ -14,7 +14,8 @@ import subprocess
 import psutil
 import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
-from pymongo import MongoClient
+#from pymongo import MongoClient
+import pymongo
 
 exclude_db = ('local') 
 work_dir = "/backup/mongodbbackup/work/"
@@ -41,6 +42,7 @@ parser.add_argument('--monthly', '-m', action="store_true", help='Option for Mon
 parser.add_argument('--weekly', '-w', action="store_true", help='Option for Weekly Backup')
 parser.add_argument('--daily', '-d', action="store_true", help='Option for Daily Backup')
 
+# Getting Auth DB credentials 
 parser.add_argument('--pwd', '-p', action="store", help='Option for password')
 parser.add_argument('--user', '-u', action="store", help='Option for user')
                                       
@@ -77,53 +79,53 @@ db_login = args.user
 def un_lock():
     lock.close()
     os.remove(lockfile)
-    
-#lock/unlock Mongod Instance
-def mongod_fsync_lock():
-    backup_output = subprocess.check_call( 
-            [
-                'mongo',
-                '-u', '%s' % db_login,
-                '-p', '%s' % db_pass,
-                '--authenticationDatabase','%s' % 'admin',	                
-                '--eval',
-                "db.fsyncLock()"
-            ])
 
-def mongod_fsync_unlock():
-    backup_output = subprocess.check_call( 
-            [
-                'mongo',
-                '-u', '%s' % db_login,
-                '-p', '%s' % db_pass,
-                '--authenticationDatabase','%s' % 'admin',	                
-                '--eval',
-                "db.fsyncUnlock()"
-            ])
+def mongo_fsync_lock(conn, state):  
+        if state is True:
+	    conn.fsync(lock=True)
+        if state is False:
+            conn.unlock()
+        print "Lock state: %s" % conn.is_locked
+
+
+
+#lock/unlock Mongod Instance
+#def mongod_fsync_lock():
+    #backup_output = subprocess.check_call( 
+            #[
+                #'mongo',
+                #'-u', '%s' % db_login,
+                #'-p', '%s' % db_pass,
+                #'--authenticationDatabase','%s' % 'admin',	                
+                #'--eval',
+                #"db.fsyncLock()"
+            #])
+
+#def mongod_fsync_unlock():
+    #backup_output = subprocess.check_call( 
+            #[
+                #'mongo',
+                #'-u', '%s' % db_login,
+                #'-p', '%s' % db_pass,
+                #'--authenticationDatabase','%s' % 'admin',	                
+                #'--eval',
+                #"db.fsyncUnlock()"
+            #])
 
 	    
 #Check if Mongod is locked
-def Mongod_is_locked():
-    db_conn = MongoClient('localhost', 27017)
-    db_conn.the_database.authenticate(db_login, db_pass, source='admin')
-    db = db_conn.admin 
-    current_ops = db.current_op(include_all=True);
-    if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
-	print(current_ops.fsyncLock)
-	logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
-    else:
-	print(current_ops.fsyncLock)
-	logging.info("Checking if Instance is Locked. Result: MongoDB isn't Locked ")
-        
-
-#def get_attr():
-    #if hasattr(current_ops,'fsyncLock'):
-	#return true
+#def Mongod_is_locked():
+    #db_conn = MongoClient('localhost', 27017)
+    #db_conn.the_database.authenticate(db_login, db_pass, source='admin')
+    #db = db_conn.admin 
+    #current_ops = db.current_op(include_all=True);
+    #if ((hasattr(current_ops,"fsyncLock")) and (current_ops.fsyncLock)):
+	#print(current_ops.fsyncLock)
+	#logging.error("Checking if Instance is Locked. Result: MongoDB is Locked ")
     #else:
-	#print "Doesn't Exists"
-	#return false
-
-
+	#print(current_ops.fsyncLock)
+	#logging.info("Checking if Instance is Locked. Result: MongoDB isn't Locked ")
+        
 
 class MongoDB:
     mongodb_list = []
@@ -210,20 +212,30 @@ else:
 #logging.info("Cleaning working directory")
 #if os.path.exists(work_dir):
 #    rmtree(work_dir) # Remove all files in work_dir                                       
-Mongod_is_locked()
-sys.exit("Checking Lock")
+#Mongod_is_locked()
+#sys.exit("Checking Lock")
 
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate(db_login, db_pass, source='admin')
 db_names = db_conn.database_names()
 
-#Locking Mongod Instance
+#to lock
 try:
-    mongod_fsync_lock()
+    mongo_fsync_lock(db_conn, True)
     logging.info("Locking Mongod Instance!")
 except AssertionError, msg:
     logging.error(msg)
+
+ 
+
+
+##Locking Mongod Instance
+#try:
+    #mongod_fsync_lock()
+    #logging.info("Locking Mongod Instance!")
+#except AssertionError, msg:
+    #logging.error(msg)
 
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
 while get_disk_space() > need_free_disk_space:
@@ -255,7 +267,8 @@ un_lock()
 #Unlocking MongoDB
 logging.info("Unlocking MongoDB Instance")
 try:
-    mongod_fsync_unlock()
+    mongo_fsync_lock(db_conn, False)
+    logging.info("Unlocking Mongod Instance!")
 except AssertionError, msg:
     logging.error(msg)
     
