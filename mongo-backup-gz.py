@@ -208,7 +208,7 @@ except AssertionError, msg:
 
  
 # Checks free disk space and cleans storage directory  if disk usage is higher than 77%
-while check_disk_space(get_last_backup(cleanup_dir):
+while check_disk_space(get_last_backup(cleanup_dir)):
     try:
         disk_clean_up()
     except AssertionError, msg:
