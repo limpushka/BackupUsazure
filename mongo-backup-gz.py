@@ -18,6 +18,7 @@ from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
 
 exclude_db = ('local') 
+db_path = "/datadisk/"
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
 lockfile = "/tmp/mongo-backup.lock"
@@ -38,7 +39,7 @@ def get_size(folder):
 	    for f in filenames:
 		fp = os.path.join(dirpath, f)
 		total_size += os.path.getsize(fp)
-	return total_size #Returns the size of a folder in bytes
+	return total_size*1.5 #Returns the size of a folder in bytes
     else:
 	return 0
 
@@ -58,10 +59,13 @@ def get_last_backup(folder):
     for dirs in os.listdir(folder): 
 	    a.append(dirs)               
 	    a.sort()
-	    last_backup = a[len(a)-1]
-	    path = os.path.join(folder,last_backup)
-	    logging.info("Last backup. %s, path %s" % (last_backup,path))
-	    return path
+	    if len(a) > 0:
+		last_backup = a[len(a)-1]
+		path = os.path.join(folder,last_backup)
+		logging.info("Last backup. %s, path %s" % (last_backup,path))
+		return path
+	    else:
+		return db_path
      
 # Key options for script launch
 parser = argparse.ArgumentParser(description='Backup schedule options - Monthly,Weekly,Daily')
@@ -104,13 +108,19 @@ def un_lock():
     lock.close()
     os.remove(lockfile)
 
+def check_fsync_lock(conn):
+    if conn.is_locked is True:
+	logging.error("Check MongoDB Instance. MongoDB Instance Lock state: %s" % conn.is_locked)
+    else:
+	logging.info("Lock state: %s" % conn.is_locked)
+
 def mongo_fsync_lock(conn, state):  
         if state is True:
 	    conn.fsync(lock=True)
         if state is False:
             conn.unlock()
-        print "Lock state: %s" % conn.is_locked
-	logging.error("MongoDB Instance Lock state: %s" % conn.is_locked)
+        
+	
         
 
 class MongoDB:
@@ -194,15 +204,15 @@ if os.path.exists(lockfile):
 else:
     lock = zc.lockfile.LockFile(lockfile, content_template='{pid}; {hostname}')
  
-# Start cleaning working directory
-#logging.info("Cleaning working directory")
-#if os.path.exists(work_dir):
-#    rmtree(work_dir) # Remove all files in work_dir 
+
 
 # Connect to Mongodb. Get list of all database names
 db_conn = MongoClient('localhost', 27017)
 db_conn.the_database.authenticate(db_login, db_pass, source='admin')
 db_names = db_conn.database_names()
+
+# Checkin if MongoDB is locked.If result is true - Problem with Replication.Need to check Replication status 
+check_fsync_lock(db_conn)
 
 #to lock
 try:
