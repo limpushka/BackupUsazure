@@ -40,7 +40,7 @@ def get_size(folder):
 		total_size += os.path.getsize(fp)
 	return total_size #Returns the size of a folder in bytes
     else:
-	continue
+	return 0
 
 # Check disk space usage
 def check_disk_space(folder):
