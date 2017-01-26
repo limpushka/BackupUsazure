@@ -233,8 +233,7 @@ mongo_clean_up()
         #logging.error(msg)
          
          
-# Unlocking and deleting temp file
-un_lock()
+
 
 #Unlocking MongoDB
 logging.info("Unlocking MongoDB Instance")
@@ -243,6 +242,8 @@ try:
     logging.info("Unlocking Mongod Instance!")
 except AssertionError, msg:
     logging.error(msg)
-    
-# Final Message
+
+# Unlocking and deleting temp file
+un_lock()# Final Message
+
 logging.info("All task's for current backup schedule done.")
