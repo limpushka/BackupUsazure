@@ -33,14 +33,18 @@ def check_dir(path):
  
 def get_size(folder):
     total_size = 0
-    for dirpath, dirnames, filenames in os.walk(folder):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return total_size #Returns the size of a folder in bytes
+    if os.path.exists(folder):
+	for dirpath, dirnames, filenames in os.walk(folder):
+	    for f in filenames:
+		fp = os.path.join(dirpath, f)
+		total_size += os.path.getsize(fp)
+	return total_size #Returns the size of a folder in bytes
+    else:
+	continue
 
 # Check disk space usage
 def check_disk_space(folder):
+    check_dir(folder)
     free_disk_space = psutil.disk_usage(storage_dir)
     if (get_size(folder) > free_disk_space.free):
 	logging.info("Free space %s is greater than last backup size %s" % (free_disk_space.free, get_size(folder)))
