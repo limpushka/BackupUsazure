@@ -57,7 +57,7 @@ def get_last_backup(folder):
 	    last_backup = a[len(a)-1]
 	    path = os.path.join(folder,last_backup)
 	    logging.info("Last backup. %s, path %s" % (last_backup,path))
-    return path
+	    return path
      
 # Key options for script launch
 parser = argparse.ArgumentParser(description='Backup schedule options - Monthly,Weekly,Daily')
