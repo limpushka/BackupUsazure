@@ -49,7 +49,7 @@ def check_disk_space(folder):
     check_dir(folder)
     free_disk_space = psutil.disk_usage(storage_dir)
     if (get_size(folder) > free_disk_space.free):
-	logging.error("Last backup size %s is greater than free disk space %s" % (get_size(folder),free_disk_space.free)
+	logging.error("Last backup size %s is greater than free disk space %s" % (get_size(folder),free_disk_space.free))
         return True
     else:
 	logging.info("Free space %s is freater than last backup size %s" % (free_disk_space.free, get_size(folder)))
