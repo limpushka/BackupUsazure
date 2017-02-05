@@ -39,19 +39,20 @@ def get_size(folder):
 	    for f in filenames:
 		fp = os.path.join(dirpath, f)
 		total_size += os.path.getsize(fp)
+		logging.info("Total size of a %s is %s. We will multiply result by 1,5 %s" % (folder, total_size,total_size*1.5))
 	return total_size*1.5 #Returns the size of a folder in bytes
     else:
 	return 0
-
+check_disk_space(get_last_backup(cleanup_dir))
 # Check disk space usage
 def check_disk_space(folder):
     check_dir(folder)
     free_disk_space = psutil.disk_usage(storage_dir)
     if (get_size(folder) > free_disk_space.free):
-	logging.info("Free space %s is greater than last backup size %s" % (free_disk_space.free, get_size(folder)))
+	logging.error("Last backup size %s is greater than free disk space %s" % (get_size(folder),free_disk_space.free)
         return True
     else:
-	logging.error("Free space %s is less than last backup size %s" % (free_disk_space.free, get_size(folder)))
+	logging.info("Free space %s is freater than last backup size %s" % (free_disk_space.free, get_size(folder)))
         return False
     
 def get_last_backup(folder):
@@ -186,8 +187,9 @@ def disk_clean_up():  # Delete old archive backup files when free disk space is 
 	    a.sort()
 	    dirtodel = a[0]
 	    del a[0]
+	    logging.info("Removing Directory %s" % dirtodel)
 	    rmtree(os.path.join(cleanup_path, dirtodel))
-	    logging.info("Not enough free disk space. Cleanup process started.File to Del %s" % dirtodel)
+	    logging.info("Done. Cleanup process started.Directory was Deleted %s" % dirtodel)
 	else :
 	    logging.error("Disk cleanup failed. Nothing to delete.")
 	    un_lock()
