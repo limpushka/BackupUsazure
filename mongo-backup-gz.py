@@ -188,7 +188,7 @@ def disk_clean_up():  # Delete old archive backup files when free disk space is 
 	    dirtodel = a[0]
 	    del a[0]
 	    logging.info("Removing Directory %s" % dirtodel)
-	    rmtree(os.path.join(cleanup_path, dirtodel))
+	    rmtree(os.path.join(cleanup_dir, dirtodel))
 	    logging.info("Done. Cleanup process started.Directory was Deleted %s" % dirtodel)
 	else :
 	    logging.error("Disk cleanup failed. Nothing to delete.")
