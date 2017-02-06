@@ -43,7 +43,7 @@ def get_size(folder):
 	return total_size*1.5 #Returns the size of a folder in bytes
     else:
 	return 0
-check_disk_space(get_last_backup(cleanup_dir))
+
 # Check disk space usage
 def check_disk_space(folder):
     check_dir(folder)
