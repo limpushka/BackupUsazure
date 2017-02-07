@@ -49,21 +49,21 @@ def check_disk_space(folder):
     check_dir(folder)
     free_disk_space = psutil.disk_usage(storage_dir)
     if (get_size(folder) > free_disk_space.free):
-	logging.error("Last backup size %s is greater than free disk space %s" % (get_size(folder),free_disk_space.free))
+	logging.error("Last backup size %s Bytes is greater than free disk space %s Bytes " % (get_size(folder),free_disk_space.free))
         return True
     else:
-	logging.info("Free space %s is freater than last backup size %s" % (free_disk_space.free, get_size(folder)))
+	logging.info("Free space %s Bytes is greater than last backup size %s Bytes" % (free_disk_space.free, get_size(folder)))
         return False
     
 def get_last_backup(folder):
     a = []
     for dirs in os.listdir(folder): 
 	    a.append(dirs)               
-	    a.sort()
+	    #a.sort()
 	    if len(a) > 0:
-		last_backup = a[len(a)-1]
+		last_backup = a[0]
 		path = os.path.join(folder,last_backup)
-		logging.info("Last backup. %s, path %s" % (last_backup,path))
+		logging.info("Last backup. %s, path %s" % (last_backup, path))
 		return path
 	    else:
 		return db_path
