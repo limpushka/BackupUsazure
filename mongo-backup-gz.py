@@ -17,7 +17,7 @@ import zc.lockfile
 from shutil import copyfile, rmtree, copytree, move
 from pymongo import MongoClient
 
-exclude_db = ('local') 
+exclude_db = ('local','et_api') 
 db_path = "/datadisk/"
 work_dir = "/backup/mongodbbackup/work/"
 cleanup_dir = "/backup//mongodbbackup/storage/daily"
@@ -62,7 +62,7 @@ def get_last_backup(folder):
 	    a.append(dirs)               
 	    a.sort()
 	    if len(a) > 0:
-		last_backup = a[0]
+		last_backup = a[len(a)-1]
 		path = os.path.join(folder,last_backup)
 		logging.info("Last backup. %s, path %s" % (last_backup, path))
 		return path
