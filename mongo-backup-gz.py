@@ -60,15 +60,16 @@ def get_last_backup(folder):
     a = []
     for dirs in os.listdir(folder): 
 	a.append(dirs)
-	logging.info("Array len: %s , Dirs %s" % (len(a), dirs))
 	a.sort()
-	if len(a) > 1:
-	    last_backup = a[-1]
-	    path = os.path.join(folder,last_backup)
-	    logging.info("Last backup. %s, path %s" % (last_backup, path))
-	    return path
-	else:
-	    return db_path
+	logging.info("Array len: %s , Dirs %s" % (len(a), dirs))
+	
+    if len(a) > 0:
+	last_backup = a[-1]
+	path = os.path.join(folder,last_backup)
+	logging.info("Last backup. %s, path %s" % (last_backup, path))
+	return path
+    else:
+	return db_path
      
 # Key options for script launch
 parser = argparse.ArgumentParser(description='Backup schedule options - Monthly,Weekly,Daily')
