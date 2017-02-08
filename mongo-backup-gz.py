@@ -62,7 +62,7 @@ def get_last_backup(folder):
 	    a.append(dirs)               
 	    a.sort()
 	    if len(a) > 0:
-		last_backup = a[len(a)-1]
+		last_backup = a[-1]
 		path = os.path.join(folder,last_backup)
 		logging.info("Last backup. %s, path %s" % (last_backup, path))
 		return path
