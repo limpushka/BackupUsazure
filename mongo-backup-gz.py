@@ -20,7 +20,7 @@ from pymongo import MongoClient
 exclude_db = ('local','et_api','mt-api') 
 db_path = "/datadisk/"
 work_dir = "/backup/mongodbbackup/work/"
-cleanup_dir = "/backup//mongodbbackup/storage/daily"
+cleanup_dir = "/backup//mongodbbackup/storage/daily/"
 lockfile = "/tmp/mongo-backup.lock"
 logfile = '/var/log/mongodb/mongo-backup.log'
 backup_time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
