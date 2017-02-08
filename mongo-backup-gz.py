@@ -59,7 +59,7 @@ def get_last_backup(folder):
     a = []
     for dirs in os.listdir(folder): 
 	    a.append(dirs)               
-	    #a.sort()
+	    a.sort()
 	    if len(a) > 0:
 		last_backup = a[0]
 		path = os.path.join(folder,last_backup)
