@@ -40,7 +40,7 @@ def get_size(folder):
 		fp = os.path.join(dirpath, f)
 		total_size += os.path.getsize(fp)
 		final_size = total_size / 1024 / 1024
-	logging.info("Final size of a %s is %s. We will multiply result by 1,5 %s Mbytes" % (folder, total_size,final_size*1.5))
+	logging.info("Final size of a %s is %s. We will multiply result by 1,5 " % (folder, total_size))
 	return total_size*1.5 #Returns the size of a folder in bytes
     else:
 	return 0
